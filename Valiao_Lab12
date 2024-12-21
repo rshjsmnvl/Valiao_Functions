@@ -1,0 +1,106 @@
+# Food ordering system with combo offers and loyalty points
+
+# Menu items
+menu = {
+    "Burger": 262.90,
+    "Pizza": 540.00,
+    "Pasta": 374.00,
+    "Salad": 426.00,
+    "Soda": 119.00
+}
+
+# Burger Combo offers
+combos = {
+    "Burger Combo": {"Burger": 262.90, "Soda": 119.00},
+    "Pizza Combo": {"Pizza": 540.00, "Soda": 119.00},
+    "Pasta Combo": {"Pasta": 7.49, "Soda": 119.00},
+    "Family Meal": {"Pizza": 540.00, "Burger": 262.90, "Pasta": 374.00, "1.5L Soda": 175.00}
+}
+
+# Loyalty points system
+loyalty_points = 0
+
+def display_menu():
+    print("Menu:")
+    for item, price in menu.items():
+        print(f"{item}: ${price:.2f}")
+    print("\nCombo Offers:")
+    for combo, items in combos.items():
+        combo_price = sum(items.values())
+        print(f"{combo}: ${combo_price:.2f}")
+
+def display_loyalty_points():
+    global loyalty_points
+    print(f"Loyalty Points: {loyalty_points} points")
+
+def take_order():
+    order_items = []
+    while True:
+        print("\nWould you like to order a combo or individual items?")
+        order_choice = input("Type 'combo' for combo offers, 'individual' for single items, or 'done' to finish: ").lower()
+        
+        if order_choice == 'done':
+            break
+        elif order_choice == 'combo':
+            combo = input(f"Choose a combo from the following: {', '.join(combos.keys())}: ").title()
+            if combo in combos:
+                order_items.extend(combos[combo].keys())
+                print(f"You chose {combo}. Items: {', '.join(combos[combo].keys())}")
+            else:
+                print("Invalid combo. Please choose a valid one.")
+        elif order_choice == 'individual':
+            item = input("Enter the food item you want to order (e.g., 'Burger'): ").title()
+            if item in menu:
+                order_items.append(item)
+                print(f"You ordered: {item}")
+            else:
+                print("Sorry, that item is not on the menu.")
+        else:
+            print("Invalid input. Please choose 'combo', 'individual', or 'done'.")
+    
+    return order_items
+
+def calculate_total(order_items):
+    total = sum(menu[item] for item in order_items if item in menu)
+    return total
+
+def apply_loyalty_discount(total):
+    global loyalty_points
+    if loyalty_points >= 100:
+        discount = total * 0.1  # 10% discount for every 100 points
+        loyalty_points -= 100  # Deduct 100 points for discount
+        total -= discount
+        print(f"Loyalty discount applied: -${discount:.2f}")
+    return total
+
+def process_payment(total):
+    while True:
+        cash_input = input(f"The total is ${total:.2f}. Please enter the amount of cash: $")
+        if cash_input.replace('.', '', 1).isdigit() and cash_input.count('.') <= 1:
+            cash = float(cash_input)
+            if cash >= total:
+                change = cash - total
+                print(f"Payment accepted. Your change is: ${change:.2f}")
+                global loyalty_points
+                loyalty_points += int(total)
+                print(f"You earned {int(total)} loyalty points.")
+                break
+            else:
+                print("Insufficient cash. Please enter enough money to cover the total.")
+        else:
+            print("Invalid input. Please enter a valid amount of cash.")
+
+def main():
+    display_menu()
+    display_loyalty_points()
+    order_items = take_order()
+    if order_items:
+        total = calculate_total(order_items)
+        total = apply_loyalty_discount(total)
+        print(f"Total after loyalty discount: ${total:.2f}")
+        process_payment(total)
+    else:
+        print("No items ordered. Goodbye!")
+
+if __name__ == "__main__":
+    main()
